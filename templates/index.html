@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SignPE Web</title>
+</head>
+<body>
+  <h2>SignPE - Video Recognition</h2>
+  <video id="video" width="640" height="480" autoplay></video>
+  <br>
+  <button onclick="startRecording()">Start Recording</button>
+  <p id="status"></p>
+
+  <script>
+    let video = document.getElementById('video');
+    let recording = false;
+    let frameBuffer = [];
+    let interval;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      });
+
+    async function startRecording() {
+      document.getElementById('status').innerText = "Recording will start...";
+      recording = true;
+      frameBuffer = [];
+
+      setTimeout(() => {
+        document.getElementById('status').innerText = "Recording...";
+        interval = setInterval(captureFrame, 1000 / 15);
+        setTimeout(stopRecording, 5000);
+      }, 1000);
+    }
+
+    function captureFrame() {
+      if (!recording) return;
+      let canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      let context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      let dataUrl = canvas.toDataURL('image/jpeg');
+      frameBuffer.push(dataUrl);
+    }
+
+    async function stopRecording() {
+      recording = false;
+      clearInterval(interval);
+      document.getElementById('status').innerText = "Sending frames...";
+
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ frames: frameBuffer })
+      });
+
+      const data = await response.json();
+      document.getElementById('status').innerText = "Prediction: " + data.label;
+    }
+  </script>
+</body>
+</html>
