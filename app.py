@@ -65,12 +65,22 @@ def predict():
         frame_data = np.concatenate((pose_landmarks.flatten(), hands_landmarks.flatten()))
         sequence.append(frame_data)
 
+    #input_data = np.expand_dims(sequence, axis=0)
+    #prediction = model.predict(input_data, verbose=0)
     input_data = np.expand_dims(sequence, axis=0)
-    prediction = model.predict(input_data, verbose=0)
-    predicted_index = str(np.argmax(prediction))
-    predicted_label = labels.get(predicted_index, 'Desconocido')
+    prediction = model.predict(input_data, verbose=0)[0]
 
-    return jsonify({'label': predicted_label})
+    #predicted_index = str(np.argmax(prediction))
+    #predicted_label = labels.get(predicted_index, 'Desconocido')
+    predicted_index = int(np.argmax(prediction))
+    predicted_label = labels.get(str(predicted_index), 'Desconocido')
+    confidence = {labels[str(i)]: float(round(prediction[i] * 100, 2)) for i in range(len(prediction))}
+
+    #return jsonify({'label': predicted_label})
+    return jsonify({
+        'label': predicted_label,
+        'confidence': confidence
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -56,7 +56,16 @@
       });
 
       const data = await response.json();
-      document.getElementById('status').innerText = "Prediction: " + data.label;
+
+      let statusText = `Prediction: ${data.label}<br><br>Probabilities:<br>`;
+      for (const [label, percent] of Object.entries(data.confidence)) {
+        statusText += `${label}: ${percent.toFixed(2)}%<br>`;
+      }
+
+
+      //document.getElementById('status').innerText = "Prediction: " + data.label;
+      document.getElementById('status').innerHTML = statusText;
+
     }
   </script>
 </body>
