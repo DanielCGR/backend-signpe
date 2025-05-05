@@ -9,6 +9,8 @@
   <br>
   <button onclick="startRecording()">Start Recording</button>
   <p id="status"></p>
+  <button onclick="loadUsers()">Load Users</button>
+  <div id="userList"></div>
 
   <script>
     let video = document.getElementById('video');
@@ -67,6 +69,29 @@
       document.getElementById('status').innerHTML = statusText;
 
     }
+    
+    async function loadUsers() {
+      const response = await fetch('/get_users');
+      const users = await response.json();
+
+      const userListDiv = document.getElementById('userList');
+      userListDiv.innerHTML = "<h3>User List:</h3>";
+
+      if (users.length === 0) {
+        userListDiv.innerHTML += "<p>No users found.</p>";
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      users.forEach(user => {
+      const li = document.createElement('li');
+      li.textContent = JSON.stringify(user);
+      ul.appendChild(li);
+    });
+
+    userListDiv.appendChild(ul);
+    }
+    
   </script>
 </body>
 </html>

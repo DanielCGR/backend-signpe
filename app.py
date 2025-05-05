@@ -7,6 +7,14 @@ import json
 from io import BytesIO
 from PIL import Image
 import base64
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+cred = credentials.Certificate("firebase_credentials.json")
+
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 app = Flask(__name__)
 
@@ -76,11 +84,67 @@ def predict():
     predicted_label = labels.get(str(predicted_index), 'Desconocido')
     confidence = {labels[str(i)]: float(round(prediction[i] * 100, 2)) for i in range(len(prediction))}
 
+    db.collection('predictions').add({
+    'label': predicted_label,
+    'confidence': confidence,
+    'timestamp': firestore.SERVER_TIMESTAMP
+    })
+
     #return jsonify({'label': predicted_label})
     return jsonify({
         'label': predicted_label,
         'confidence': confidence
     })
+
+# Create
+@app.route('/add_prediction', methods=['POST'])
+def add_prediction():
+    data = request.json
+    doc_ref = db.collection('predictions').add(data)
+    return jsonify({'id': doc_ref[1].id, 'message': 'Prediction added'}), 201
+
+# Read All
+@app.route('/get_predictions', methods=['GET'])
+def get_predictions():
+    docs = db.collection('predictions').stream()
+    result = [{doc.id: doc.to_dict()} for doc in docs]
+    return jsonify(result)
+
+# Read One
+@app.route('/get_prediction/<id>', methods=['GET'])
+def get_prediction(id):
+    doc = db.collection('predictions').document(id).get()
+    if doc.exists:
+        return jsonify(doc.to_dict())
+    else:
+        return jsonify({'error': 'Not found'}), 404
+
+# Update
+@app.route('/update_prediction/<id>', methods=['PUT'])
+def update_prediction(id):
+    data = request.json
+    db.collection('predictions').document(id).update(data)
+    return jsonify({'message': 'Prediction updated'})
+
+# Delete
+@app.route('/delete_prediction/<id>', methods=['DELETE'])
+def delete_prediction(id):
+    db.collection('predictions').document(id).delete()
+    return jsonify({'message': 'Prediction deleted'})
+
+
+@app.route('/get_users', methods=['GET'])
+def get_users():
+    users_ref = db.collection('users')
+    docs = users_ref.stream()
+
+    users = []
+    for doc in docs:
+        user_data = doc.to_dict()
+        user_data['id'] = doc.id  # Include document ID if needed
+        users.append(user_data)
+
+    return jsonify(users)
 
 if __name__ == '__main__':
     app.run(debug=True)
