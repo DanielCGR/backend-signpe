@@ -37,7 +37,7 @@ db = firestore.client()
 app = Flask(__name__)
 
 # Load model and labels
-#model = tf.keras.models.load_model('model_color.keras')
+model = tf.keras.models.load_model('model_color.keras')
 with open('color_labels.json') as f:
     labels = json.load(f)
 
