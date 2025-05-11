@@ -159,6 +159,7 @@ def delete_prediction(id):
 
 @app.route('/get_users', methods=['GET'])
 def get_users():
+    print("Test to check render debug window")
     users_ref = db.collection('users')
     docs = users_ref.stream()
 
