@@ -28,9 +28,12 @@ firebase_config = {
     "universe_domain": os.environ.get("FIREBASE_UNIVERSE_DOMAIN")
 }
 
-cred = credentials.Certificate(firebase_config)
-
-firebase_admin.initialize_app(cred)
+try:
+    cred = credentials.Certificate(json.loads(os.environ['FIREBASE_CREDS']))
+    firebase_admin.initialize_app(cred)
+except Exception as e:
+    print(f"Firebase init failed: {e}")
+    raise e
 
 db = firestore.client()
 
