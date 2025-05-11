@@ -42,10 +42,10 @@ with open('color_labels.json') as f:
     labels = json.load(f)
 
 # Initialize MediaPipe
-#mp_pose = mp.solutions.pose
-#mp_hands = mp.solutions.hands
-#pose = mp_pose.Pose()
-#hands = mp_hands.Hands()
+mp_pose = mp.solutions.pose
+mp_hands = mp.solutions.hands
+pose = mp_pose.Pose()
+hands = mp_hands.Hands()
 
 @app.route('/')
 def index():
