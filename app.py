@@ -159,17 +159,23 @@ def delete_prediction(id):
 
 @app.route('/get_users', methods=['GET'])
 def get_users():
-    print("Test to check render debug window")
-    users_ref = db.collection('users')
-    docs = users_ref.stream()
+    try:
+        print("Test to check render debug window")
+        users_ref = db.collection('users')
+        docs = users_ref.stream()
 
-    users = []
-    for doc in docs:
-        user_data = doc.to_dict()
-        user_data['id'] = doc.id  # Include document ID if needed
-        users.append(user_data)
+        users = []
+        for doc in docs:
+            user_data = doc.to_dict()
+            user_data['id'] = doc.id  # Include document ID if needed
+            users.append(user_data)
 
-    return jsonify(users)
+        return jsonify(users)
+    
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error in /get_users: {e}")
+        return jsonify({'error': 'Failed to fetch users'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))  # Render sets $PORT
