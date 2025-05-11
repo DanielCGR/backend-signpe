@@ -37,15 +37,15 @@ db = firestore.client()
 app = Flask(__name__)
 
 # Load model and labels
-model = tf.keras.models.load_model('model_color.keras')
+#model = tf.keras.models.load_model('model_color.keras')
 with open('color_labels.json') as f:
     labels = json.load(f)
 
 # Initialize MediaPipe
-mp_pose = mp.solutions.pose
-mp_hands = mp.solutions.hands
-pose = mp_pose.Pose()
-hands = mp_hands.Hands()
+#mp_pose = mp.solutions.pose
+#mp_hands = mp.solutions.hands
+#pose = mp_pose.Pose()
+#hands = mp_hands.Hands()
 
 @app.route('/')
 def index():
