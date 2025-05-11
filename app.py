@@ -55,6 +55,7 @@ def index():
 def predict():
     data = request.get_json()
     frames = data.get('frames', [])
+    print(f"Received {len(frames)} frames")
 
     if len(frames) < 60:
         return jsonify({'label': 'Not enough frames'}), 400
@@ -93,8 +94,13 @@ def predict():
 
     #input_data = np.expand_dims(sequence, axis=0)
     #prediction = model.predict(input_data, verbose=0)
-    input_data = np.expand_dims(sequence, axis=0)
-    prediction = model.predict(input_data, verbose=0)[0]
+    try:
+        input_data = np.expand_dims(sequence, axis=0)
+        prediction = model.predict(input_data, verbose=0)[0]
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        return jsonify({'error': 'Prediction failed'}), 500
+
 
     #predicted_index = str(np.argmax(prediction))
     #predicted_label = labels.get(predicted_index, 'Desconocido')
