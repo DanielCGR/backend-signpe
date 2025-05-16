@@ -11,6 +11,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -38,6 +39,7 @@ except Exception as e:
 db = firestore.client()
 
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:3000"])
 
 # Load model and labels
 model = tf.keras.models.load_model('model_color.keras')
