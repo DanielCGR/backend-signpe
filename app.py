@@ -124,13 +124,16 @@ def create_all_categories():
 
 @app.route('/')
 def index():
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!APLICACION INICIADA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    print("ANTES DE ABSOLUTAMENTE TODO")
     data = request.get_json()
+    print("DESPUES DE REQUEST.GET_JSON")
     images = data.get('frames')
-
+    print("DESPUES DE DATA.GET(FRAMES)")
     if not images or len(images) != 30:
         return jsonify({'error': 'Se requieren exactamente 30 frames'}), 400
 
