@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-import cv2
+#import cv2
 import numpy as np
 import tensorflow as tf
 import mediapipe as mp
