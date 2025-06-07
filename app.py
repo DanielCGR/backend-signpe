@@ -37,7 +37,7 @@ except Exception as e:
 db = firestore.client()
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
+CORS(app, origins=["http://localhost:5173"])
 
 # Cargar modelo y labels
 MODEL_PATH = 'Models-v9/color_v9.keras'

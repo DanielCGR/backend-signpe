@@ -60,7 +60,7 @@
         resultDiv.textContent = "Enviando al servidor...";
 
         try {
-          const res = await fetch("http://127.0.0.1:10000/predict", {
+          const res = await fetch("/predict", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ frames }),
@@ -108,7 +108,7 @@
         }
 
         // Enviar al backend
-        const res = await fetch("http://127.0.0.1:10000/predict", {
+        const res = await fetch("/predict", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ frames }),
