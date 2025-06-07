@@ -135,8 +135,9 @@ def predict():
         return jsonify({'error': 'Se requieren exactamente 30 frames'}), 400
 
     sequence = []
-
+    print("ANTES DEL FOR")
     for img_base64 in images:
+        print("ANALIZANDO IMAGEN")
         img_bytes = base64.b64decode(img_base64.split(',')[-1])
         np_arr = np.frombuffer(img_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -166,13 +167,17 @@ def predict():
         features = np.concatenate([pose_vec.flatten(), left_hand.flatten(), right_hand.flatten()])
         sequence.append(features)
 
+    print("ANTES DEL TRY")
     try:
         input_array = np.expand_dims(np.array(sequence), axis=0)
+        print("DENTRO DEL TRY")
         prediction = model.predict(input_array, verbose=0)[0]    
     except Exception as e:
         print(f"Prediction error: {e}")
         return jsonify({'error':'Prediction Failed'}),500
     
+    print("DESPUES DEL PREDICT")
+
     predicted_index = int(np.argmax(prediction))
     predicted_label = labels.get(str(predicted_index),'Desconocido')
     confidence = {labels[str(i)]: float(round(prediction[i] * 100, 2)) for i in range(len(prediction))}
