@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = [
+  "python312",
+  "libGL",
+  "ffmpeg",          # (optional) for video-related features
+  "libGLU",          # (optional) for broader GL support
+  "opencv"           # (optional) may help depending on your OpenCV usage
+]
