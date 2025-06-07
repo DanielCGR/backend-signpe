@@ -1,97 +1,161 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>SignPE Web</title>
-</head>
-<body>
-  <h2>SignPE - Video Recognition</h2>
-  <video id="video" width="640" height="480" autoplay></video>
-  <br>
-  <button onclick="startRecording()">Start Recording</button>
-  <p id="status"></p>
-  <button onclick="loadUsers()">Load Users</button>
-  <div id="userList"></div>
+  <head>
+    <title>SignPE - Cámara Web</title>
+    <style>
+      video,
+      canvas {
+        display: block;
+        margin: auto;
+      }
+      button {
+        display: block;
+        margin: 10px auto;
+        padding: 10px;
+      }
+      #result {
+        text-align: center;
+        margin-top: 15px;
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 style="text-align: center">SignPE - Cámara Web</h2>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button onclick="startRecording()">Iniciar Grabación</button>
+    <button onclick="startTest()">Test</button>
+    <div
+      id="colorToSign"
+      style="text-align: center; font-size: 24px; margin: 10px"
+    ></div>
 
-  <script>
-    let video = document.getElementById('video');
-    let recording = false;
-    let frameBuffer = [];
-    let interval;
+    <div id="result">Esperando...</div>
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
+    <script>
+      const video = document.getElementById("video");
+
+      // Acceder a cámara
+      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
         video.srcObject = stream;
       });
 
-    async function startRecording() {
-      document.getElementById('status').innerText = "Recording will start...";
-      recording = true;
-      frameBuffer = [];
+      async function startRecording() {
+        const frames = [];
+        const resultDiv = document.getElementById("result");
+        resultDiv.textContent = "Grabando...";
 
-      setTimeout(() => {
-        document.getElementById('status').innerText = "Recording...";
-        interval = setInterval(captureFrame, 1000 / 1);
-        setTimeout(stopRecording, 1000);
-      }, 1000);
-    }
+        for (let i = 0; i < 30; i++) {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const base64 = canvas.toDataURL("image/jpeg");
+          frames.push(base64);
 
-    function captureFrame() {
-      if (!recording) return;
-      let canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      let context = canvas.getContext('2d');
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      let dataUrl = canvas.toDataURL('image/jpeg');
-      frameBuffer.push(dataUrl);
-    }
+          await new Promise((r) => setTimeout(r, 100)); // 10 fps
+        }
 
-    async function stopRecording() {
-      recording = false;
-      clearInterval(interval);
-      document.getElementById('status').innerText = "Sending frames...";
+        resultDiv.textContent = "Enviando al servidor...";
 
-      const response = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frames: frameBuffer })
+        try {
+          const res = await fetch("http://127.0.0.1:10000/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ frames }),
+          });
+
+          const data = await res.json();
+          console.log("data", data);
+          if (res.ok) {
+            let msg = `Resultado: ${data.label}`;
+
+            resultDiv.innerHTML = msg;
+          } else {
+            resultDiv.textContent = "Error: " + (data.error || "Desconocido");
+          }
+        } catch (err) {
+          console.error(err);
+          resultDiv.textContent = "Error en la comunicación con el servidor.";
+        }
+      }
+    </script>
+    <script>
+      const colors = ["amarillo", "azul", "blanco", "negro", "rojo", "verde"];
+      let testColor = null;
+
+      async function startTest() {
+        testColor = colors[Math.floor(Math.random() * colors.length)];
+        document.getElementById("colorToSign").textContent =
+          "¡Haz la seña de: " + testColor.toUpperCase() + "!";
+        document.getElementById("result").textContent = "";
+
+        // Esperar 3 segundos
+        await new Promise((r) => setTimeout(r, 3000));
+
+        // Grabar frames como en startRecording
+        const frames = [];
+        for (let i = 0; i < 30; i++) {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const base64 = canvas.toDataURL("image/jpeg");
+          frames.push(base64);
+          await new Promise((r) => setTimeout(r, 100));
+        }
+
+        // Enviar al backend
+        const res = await fetch("http://127.0.0.1:10000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ frames }),
+        });
+
+        const data = await res.json();
+
+        console.log("data", data);
+
+        if (res.ok) {
+          let msg = "Predicciones:<br>";
+          let predictedColor = "";
+          let bestConfidence = 0;
+
+          for (const [label, score] of Object.entries(data)) {
+            msg += `🔹 ${label}: ${score.toFixed(2)}%<br>`;
+            if (score > bestConfidence) {
+              bestConfidence = score;
+              predictedColor = label;
+            }
+          }
+
+          const correct = predictedColor === testColor && bestConfidence >= 90;
+          msg += correct
+            ? `<div style="color:green; font-size:20px;">✅ ¡Correcto!</div>`
+            : `<div style="color:red; font-size:20px;">❌ Incorrecto</div>`;
+
+          document.getElementById("result").innerHTML = msg;
+        } else {
+          document.getElementById("result").textContent =
+            "Error: " + (data.error || "Desconocido");
+        }
+      }
+    </script>
+    <script>
+      // Mostrar instrucciones al cargar la página
+      document.addEventListener("DOMContentLoaded", () => {
+        const instructions = document.createElement("div");
+        instructions.style.textAlign = "center";
+        instructions.style.marginTop = "20px";
+        instructions.innerHTML = `
+            <p>1. Haz clic en "Iniciar Grabación" para capturar imágenes.</p>
+            <p>2. Haz clic en "Test" para realizar una prueba de reconocimiento de colores.</p>
+            <p>3. Sigue las instrucciones en pantalla.</p>
+        `;
+        document.body.appendChild(instructions);
       });
-
-      const data = await response.json();
-
-      let statusText = `Prediction: ${data.label}<br><br>Probabilities:<br>`;
-      for (const [label, percent] of Object.entries(data.confidence)) {
-        statusText += `${label}: ${percent.toFixed(2)}%<br>`;
-      }
-
-
-      //document.getElementById('status').innerText = "Prediction: " + data.label;
-      document.getElementById('status').innerHTML = statusText;
-
-    }
-    
-    async function loadUsers() {
-      const response = await fetch('/get_users');
-      const users = await response.json();
-
-      const userListDiv = document.getElementById('userList');
-      userListDiv.innerHTML = "<h3>User List:</h3>";
-
-      if (users.length === 0) {
-        userListDiv.innerHTML += "<p>No users found.</p>";
-        return;
-      }
-
-      const ul = document.createElement('ul');
-      users.forEach(user => {
-      const li = document.createElement('li');
-      li.textContent = JSON.stringify(user);
-      ul.appendChild(li);
-    });
-
-    userListDiv.appendChild(ul);
-    }
-    
-  </script>
-</body>
+    </script>
+  </body>
 </html>

@@ -4,8 +4,6 @@ import numpy as np
 import tensorflow as tf
 import mediapipe as mp
 import json
-from io import BytesIO
-from PIL import Image
 import base64
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -39,18 +37,90 @@ except Exception as e:
 db = firestore.client()
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:10000"])
+CORS(app, origins=["http://localhost:3000"])
 
-# Load model and labels
-model = tf.keras.models.load_model('model_color.keras')
-with open('color_labels.json') as f:
+# Cargar modelo y labels
+MODEL_PATH = 'Models-v9/color_v9.keras'
+LABELS_PATH = 'Models-v9/color_labels.json'
+
+model = tf.keras.models.load_model(MODEL_PATH)
+with open(LABELS_PATH, 'r') as f:
     labels = json.load(f)
 
-# Initialize MediaPipe
+# Inicializar MediaPipe
 mp_pose = mp.solutions.pose
 mp_hands = mp.solutions.hands
-pose = mp_pose.Pose()
-hands = mp_hands.Hands()
+pose = mp_pose.Pose(static_image_mode=True)
+hands = mp_hands.Hands(static_image_mode=True, max_num_hands=2)
+
+
+
+
+def add_category_with_signs(custom_category_id, category_name, category_description, category_icon, signs):
+    category_ref = db.collection("categories").document(custom_category_id)
+    
+    # Step 1: Set or update the category
+    category_ref.set({
+        "name": category_name,
+        "description": category_description,
+        "signCount": len(signs),
+        "icon": category_icon
+    }, merge=True)
+
+    # Step 2: Collect current sign IDs in Firestore for this category
+    existing_signs_query = db.collection("signs").where("categoryId", "==", custom_category_id).stream()
+    existing_sign_ids = {sign.id for sign in existing_signs_query}
+
+    # Step 3: Collect sign IDs from the input
+    new_sign_ids = {sign["id"] for sign in signs if "id" in sign and sign["id"]}
+
+    # Step 4: Delete signs that exist in Firestore but not in the new input
+    signs_to_delete = existing_sign_ids - new_sign_ids
+    for sign_id in signs_to_delete:
+        db.collection("signs").document(sign_id).delete()
+
+    # Step 5: Create or update new/modified signs
+    for sign in signs:
+        custom_sign_id = sign.get("id")
+        sign_name = sign.get("name")
+        sign_video_ref = sign.get("videoRef")
+
+        if not custom_sign_id or not sign_name:
+            continue
+
+        sign_ref = db.collection("signs").document(custom_sign_id)
+        sign_ref.set({
+            "name": sign_name,
+            "categoryId": custom_category_id,
+            "videoRef": sign_video_ref
+        }, merge=True)
+
+    return custom_category_id
+
+
+def create_all_categories():
+    categoria_id = add_category_with_signs("categoryId01", "Alfabeto", "Aprende el abecedario en LSP y mejora tu habilidad para deletrear con señas.","hand", [
+    {"id": "signId001", "name": "Letra A", "videoRef": "4Pmnh4tRwuk"},
+    {"id": "signId002", "name": "Letra B", "videoRef": "youtube.com"},
+    {"id": "signId003", "name": "Letra C", "videoRef": "youtube.com"},
+    {"id": "signId004", "name": "Letra D", "videoRef": "youtube.com"},
+    {"id": "signId005", "name": "Letra E", "videoRef": "youtube.com"},
+    {"id": "signId006", "name": "Letra F", "videoRef": "youtube.com"}
+    ])
+    print(f"Categoría creada con ID: {categoria_id}")
+    categoria_id = add_category_with_signs("categoryId02", "Colores", "Identifica y aprende los colores básicos para describir el mundo que te rodea.","palette", [
+    {"id": "signId007", "name": "Verde", "videoRef": "youtube.com"},
+    {"id": "signId008", "name": "Rojo", "videoRef": "youtube.com"},
+    {"id": "signId009", "name": "Amarillo", "videoRef": "youtube.com"},
+    {"id": "signId010", "name": "Blanco", "videoRef": "youtube.com"},
+    {"id": "signId011", "name": "Negro", "videoRef": "youtube.com"},
+    {"id": "signId012", "name": "Morado", "videoRef": "youtube.com"}
+    ])
+    print(f"Categoría creada con ID: {categoria_id}")
+    categoria_id = add_category_with_signs("categoryId03", "Familia", "Identifica y aprende los colores básicos para describir el mundo que te rodea.","palette", [
+    ])
+    print(f"Categoría creada con ID: {categoria_id}")
+    
 
 @app.route('/')
 def index():
@@ -59,58 +129,52 @@ def index():
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
-    frames = data.get('frames', [])
-    print(f"Received {len(frames)} frames")
+    images = data.get('frames')
 
-    if len(frames) < 60:
-        return jsonify({'label': 'Not enough frames'}), 400
+    if not images or len(images) != 30:
+        return jsonify({'error': 'Se requieren exactamente 30 frames'}), 400
 
     sequence = []
-    pose_indices = [0, 2, 5] + list(range(7, 17))
-    hand_landmarks_count = 21
 
-    for frame_data in frames[:60]:
-        header, encoded = frame_data.split(",", 1)
-        img_bytes = base64.b64decode(encoded)
-        image = Image.open(BytesIO(img_bytes)).convert('RGB')
-        frame = np.array(image)
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    for img_base64 in images:
+        img_bytes = base64.b64decode(img_base64.split(',')[-1])
+        np_arr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        pose_results = pose.process(frame_rgb)
-        hands_results = hands.process(frame_rgb)
+        # Procesar con MediaPipe
+        pose_result = pose.process(image_rgb)
+        hands_result = hands.process(image_rgb)
 
-        pose_landmarks = np.zeros((len(pose_indices), 3))
-        if pose_results.pose_landmarks:
-            pose_landmarks = np.array([
-                [pose_results.pose_landmarks.landmark[i].x,
-                 pose_results.pose_landmarks.landmark[i].y,
-                 pose_results.pose_landmarks.landmark[i].z]
-                for i in pose_indices
-            ])
+        pose_vec = np.zeros((33, 4))
+        if pose_result.pose_landmarks:
+            for i, lm in enumerate(pose_result.pose_landmarks.landmark):
+                pose_vec[i] = [lm.x, lm.y, lm.z, lm.visibility]
 
-        hands_landmarks = np.zeros((2 * hand_landmarks_count, 3))
-        if hands_results.multi_hand_landmarks:
-            for i, hand_landmarks in enumerate(hands_results.multi_hand_landmarks[:2]):
-                for j, landmark in enumerate(hand_landmarks.landmark):
-                    hands_landmarks[i * hand_landmarks_count + j] = [landmark.x, landmark.y, landmark.z]
+        left_hand = np.full((21, 3), -1.0)
+        right_hand = np.full((21, 3), -1.0)
 
-        frame_data = np.concatenate((pose_landmarks.flatten(), hands_landmarks.flatten()))
-        sequence.append(frame_data)
+        if hands_result.multi_hand_landmarks and hands_result.multi_handedness:
+            for idx, handedness in enumerate(hands_result.multi_handedness):
+                label = handedness.classification[0].label
+                coords = np.array([[lm.x, lm.y, lm.z] for lm in hands_result.multi_hand_landmarks[idx].landmark])
+                if label == 'Left':
+                    left_hand = coords
+                else:
+                    right_hand = coords
 
-    #input_data = np.expand_dims(sequence, axis=0)
-    #prediction = model.predict(input_data, verbose=0)
+        features = np.concatenate([pose_vec.flatten(), left_hand.flatten(), right_hand.flatten()])
+        sequence.append(features)
+
     try:
-        input_data = np.expand_dims(sequence, axis=0)
-        prediction = model.predict(input_data, verbose=0)[0]
+        input_array = np.expand_dims(np.array(sequence), axis=0)
+        prediction = model.predict(input_array, verbose=0)[0]    
     except Exception as e:
         print(f"Prediction error: {e}")
-        return jsonify({'error': 'Prediction failed'}), 500
-
-
-    #predicted_index = str(np.argmax(prediction))
-    #predicted_label = labels.get(predicted_index, 'Desconocido')
+        return jsonify({'error':'Prediction Failed'}),500
+    
     predicted_index = int(np.argmax(prediction))
-    predicted_label = labels.get(str(predicted_index), 'Desconocido')
+    predicted_label = labels.get(str(predicted_index),'Desconocido')
     confidence = {labels[str(i)]: float(round(prediction[i] * 100, 2)) for i in range(len(prediction))}
 
     db.collection('predictions').add({
@@ -119,69 +183,19 @@ def predict():
     'timestamp': firestore.SERVER_TIMESTAMP
     })
 
-    #return jsonify({'label': predicted_label})
+    #result = {
+    #    labels[str(i)]: float(f"{p*100:.2f}") for i, p in enumerate(prediction)
+    #}
+    
+    #print("prediction ",prediction)
+
     return jsonify({
         'label': predicted_label,
         'confidence': confidence
     })
 
-# Create
-@app.route('/add_prediction', methods=['POST'])
-def add_prediction():
-    data = request.json
-    doc_ref = db.collection('predictions').add(data)
-    return jsonify({'id': doc_ref[1].id, 'message': 'Prediction added'}), 201
-
-# Read All
-@app.route('/get_predictions', methods=['GET'])
-def get_predictions():
-    docs = db.collection('predictions').stream()
-    result = [{doc.id: doc.to_dict()} for doc in docs]
-    return jsonify(result)
-
-# Read One
-@app.route('/get_prediction/<id>', methods=['GET'])
-def get_prediction(id):
-    doc = db.collection('predictions').document(id).get()
-    if doc.exists:
-        return jsonify(doc.to_dict())
-    else:
-        return jsonify({'error': 'Not found'}), 404
-
-# Update
-@app.route('/update_prediction/<id>', methods=['PUT'])
-def update_prediction(id):
-    data = request.json
-    db.collection('predictions').document(id).update(data)
-    return jsonify({'message': 'Prediction updated'})
-
-# Delete
-@app.route('/delete_prediction/<id>', methods=['DELETE'])
-def delete_prediction(id):
-    db.collection('predictions').document(id).delete()
-    return jsonify({'message': 'Prediction deleted'})
-
-
-@app.route('/get_users', methods=['GET'])
-def get_users():
-    try:
-        print("Test to check render debug window")
-        users_ref = db.collection('users')
-        docs = users_ref.stream()
-
-        users = []
-        for doc in docs:
-            user_data = doc.to_dict()
-            user_data['id'] = doc.id  # Include document ID if needed
-            users.append(user_data)
-
-        return jsonify(users)
-    
-    except Exception as e:
-        # Log the error for debugging
-        print(f"Error in /get_users: {e}")
-        return jsonify({'error': 'Failed to fetch users'}), 500
-
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))  # Render sets $PORT
+    port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+    #app.run(debug=True, host='127.0.0.1', port=5000)
+
