@@ -476,8 +476,8 @@ def get_exam_signs():
 
 
 if __name__ == '__main__':
-    #port = int(os.environ.get('PORT', 10000))
-    #app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
     #app.run(debug=True, host='127.0.0.1', port=5000)
     
     #create_all_categories()
@@ -487,10 +487,20 @@ if __name__ == '__main__':
 
     #create_all_levels()
     #get_levels()
-    get_exam_signs()
+    #get_exam_signs()
 
-[{'category': {'description': 'Aprende el abecedario en LSP y mejora tu habilidad para deletrear con señas.', 'icon': 'hand', 'signCount': 6, 'levelId': 'levelId01', 'name': 'Alfabeto'}, 'signs': [{'videoRef': 'YKgCa1dwItA', 'label': 'a', 'categoryId': 'categoryId01', 'name': 'Letra A'}, {'videoRef': 'nl5ghpTg5ec', 'label': 'b', 'categoryId': 'categoryId01', 'name': 'Letra B'}, {'videoRef': 'H-anKSubm-w', 'label': 'c', 'categoryId': 'categoryId01', 'name': 'Letra C'}, {'videoRef': 'r_Gs_Jbdl9E', 'label': 'd', 'categoryId': 'categoryId01', 'name': 'Letra D'}, {'videoRef': 'youtube.com', 'label': 'e', 'categoryId': 'categoryId01', 'name': 
-'Letra E'}, {'videoRef': 'youtube.com', 'label': 'f', 'categoryId': 'categoryId01', 'name': 'Letra F'}]}, 
-{'category': {'description': 'Identifica y aprende los colores básicos para describir el mundo que te rodea.', 'icon': 'palette', 'signCount': 6, 'levelId': 'levelId01', 'name': 'Colores'}, 'signs': [{'videoRef': 'KmUUdxL4W7U', 'label': 'verde', 'categoryId': 'categoryId02', 'name': 'Verde'}, {'videoRef': 'PUx8iIfwvDU', 'label': 'rojo', 'categoryId': 'categoryId02', 'name': 'Rojo'}, {'videoRef': 'y1_EkCMMlhM', 'label': 'amarillo', 'categoryId': 'categoryId02', 'name': 'Amarillo'}, {'videoRef': '1s4aYoAodlc', 'label': 'blanco', 'categoryId': 'categoryId02', 'name': 'Blanco'}, {'videoRef': '60TK3s9V0nY', 'label': 'negro', 'categoryId': 'categoryId02', 'name': 'Negro'}, {'videoRef': 'VC0csxuR34Q', 'label': 'azul', 'categoryId': 'categoryId02', 'name': 'Azul'}]}]
+#max_signs = 3
 
-[{'videoRef': 'YKgCa1dwItA', 'label': 'a', 'categoryId': 'categoryId01', 'name': 'Letra A'},{'videoRef': 'YKgCa1dwItA', 'label': 'a', 'categoryId': 'categoryId01', 'name': 'Letra A'},{'videoRef': 'YKgCa1dwItA', 'label': 'a', 'categoryId': 'categoryId01', 'name': 'Letra A'}]
+#[
+#    {'videoRef': 'YKgCa1dwItA', 'label': 'a', 'categoryId': 'categoryId01', 'name': 'Letra A'}, 
+#    {'videoRef': 'nl5ghpTg5ec', 'label': 'b', 'categoryId': 'categoryId01', 'name': 'Letra B'}, 
+#    {'videoRef': 'H-anKSubm-w', 'label': 'c', 'categoryId': 'categoryId01', 'name': 'Letra C'}, 
+#    {'videoRef': 'r_Gs_Jbdl9E', 'label': 'd', 'categoryId': 'categoryId01', 'name': 'Letra D'}, 
+#    {'videoRef': 'youtube.com', 'label': 'e', 'categoryId': 'categoryId01', 'name': 'Letra E'}, 
+#    {'videoRef': 'youtube.com', 'label': 'f', 'categoryId': 'categoryId01', 'name': 'Letra F'}, 
+#    {'videoRef': 'KmUUdxL4W7U', 'label': 'verde', 'categoryId': 'categoryId02', 'name': 'Verde'}, 
+#    {'videoRef': 'PUx8iIfwvDU', 'label': 'rojo', 'categoryId': 'categoryId02', 'name': 'Rojo'}, 
+#    {'videoRef': 'y1_EkCMMlhM', 'label': 'amarillo', 'categoryId': 'categoryId02', 'name': 'Amarillo'}, 
+#    {'videoRef': '1s4aYoAodlc', 'label': 'blanco', 'categoryId': 'categoryId02', 'name': 'Blanco'}, 
+#    {'videoRef': '60TK3s9V0nY', 'label': 'negro', 'categoryId': 'categoryId02', 'name': 'Negro'}, 
+#    {'videoRef': 'VC0csxuR34Q', 'label': 'azul', 'categoryId': 'categoryId02', 'name': 'Azul'}]
