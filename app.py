@@ -10,6 +10,7 @@ from firebase_admin import credentials, firestore
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS
+import random
 
 load_dotenv()
 
@@ -263,7 +264,7 @@ def predict():
             "categoryId": category_ID
         }, merge=True)
     
-    if probability < 0.80 or sign_progress_probability >= 80:#PASAR LUEGO A BASE DE DATOS PARA NO CODIGO DURO
+    if probability < 80 or sign_progress_probability >= probability:#PASAR LUEGO A BASE DE DATOS PARA NO CODIGO DURO
         return jsonify(result)
 
     
@@ -282,14 +283,26 @@ def predict():
     .where("uid", "==", UID_TEMP)
     ).stream()
 
-    category_progress_doc = next((doc for doc in category_progress_query.stream()if doc.get("categoryId") == category_ID), None)
+    print("\n\n")
+    for doc in category_progress_query:
+        print("CATEGORY PROGRESS FOUND")
+    print("\n\n")
+
+    category_progress_doc = next((doc for doc in category_progress_query if doc.get("categoryId") == category_ID), None)
     #category_progress_doc = next(category_progress_query, None)
+
+    if category_progress_doc == None:
+        print("CATEGORY PROGRESS IS NONE")
+
+    print("\n\n")
+    for doc in category_progress_query:
+        print("CATEGORY PROGRESS FOUND AFTER NEXT")
+    print("\n\n")
 
     if category_progress_doc:
         doc_ref = db.collection("categoryProgress").document(category_progress_doc.id)
     else:
         doc_ref = db.collection("categoryProgress").document()
-    
 
     doc_ref.set({
     "categoryId": category_ID,
@@ -299,12 +312,16 @@ def predict():
     }, merge=True)
 
     # LEVEL PROGRESS
-
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
+    
     total_progress = 0
     for doc in category_progress_query:
         data = doc.to_dict()
         progress = data.get("progress", 0)
+        print("CATEGORY PROGRESS: ",progress)
         total_progress += progress
+    
+    print("total_progress: ",total_progress)
 
     level_progress_ref = (
         db.collection("levelProgress")
@@ -336,8 +353,6 @@ def predict():
             "uid": UID_TEMP,
             "available": True  # default if none exists
         })
-
-    
 
     return jsonify(result)
 
@@ -380,6 +395,8 @@ def get_signs():
 def get_categories():
     uid = request.args.get('uid')
     level_id = request.args.get('levelId')
+    #uid = "0NSMMq6jFrT1HooF1705oDvttzT2"
+    #level_id = "levelId01"
 
     categoryProgress_query = (
         db.collection("categoryProgress")
@@ -390,7 +407,7 @@ def get_categories():
         db.collection("categories")
         .where("levelId", "==", level_id)
     ).stream()
-    
+
     progress_map = {}
     for doc in categoryProgress_query:
         data = doc.to_dict()
@@ -406,11 +423,18 @@ def get_categories():
         category_data["progress"] = progress_map.get(category_id, 0)
         merged_results.append({**category_data, "id": category_id})
 
-    return jsonify(merged_results)
+    can_do_test = True
+    for category in merged_results:
+        if category.get("progress") < category.get("signCount"):
+            can_do_test = False
+    
+    result = {"categories": merged_results,"canDoTest":can_do_test}
+    return jsonify(result)
 
 @app.route('/get-levels', methods=['GET'])
 def get_levels():
     uid = request.args.get('uid')
+    #uid = "p305DPCAvFOxLtUVo86JErnpbD33"
     
     levelProgress_query = (
         db.collection("levelProgress")
@@ -450,7 +474,9 @@ def get_levels():
 
 @app.route('/get-exam-signs', methods=['GET'])
 def get_exam_signs():
-    level_id = "levelId01"#request.args.get('levelId')
+    #level_id = "levelId01"
+    level_id = request.args.get('levelId')
+    max_signs = 3
 
     category_query = (
         db.collection("categories")
@@ -466,11 +492,14 @@ def get_exam_signs():
             .where("categoryId", "==", category_id)
         ).stream()
 
-        for sign_doc in signs_query:
-            merged_results.append(sign_doc.to_dict())
+        signs = [sign_doc.to_dict() for sign_doc in signs_query]
 
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print(merged_results)
+        random.shuffle(signs)
+        selected_signs = signs[:max_signs] if max_signs < len(signs) else signs
+        merged_results.extend(selected_signs)
+
+    #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    #print(merged_results)
 
     return jsonify(merged_results)
 
@@ -504,3 +533,17 @@ if __name__ == '__main__':
 #    {'videoRef': '1s4aYoAodlc', 'label': 'blanco', 'categoryId': 'categoryId02', 'name': 'Blanco'}, 
 #    {'videoRef': '60TK3s9V0nY', 'label': 'negro', 'categoryId': 'categoryId02', 'name': 'Negro'}, 
 #    {'videoRef': 'VC0csxuR34Q', 'label': 'azul', 'categoryId': 'categoryId02', 'name': 'Azul'}]
+
+#[
+#    {'videoRef': 'youtube.com', 'label': 'f', 'categoryId': 'categoryId01', 'name': 'Letra F'},
+#    {'videoRef': 'r_Gs_Jbdl9E', 'label': 'd', 'categoryId': 'categoryId01', 'name': 'Letra D'}, 
+#    {'videoRef': 'nl5ghpTg5ec', 'label': 'b', 'categoryId': 'categoryId01', 'name': 'Letra B'}, 
+#    {'videoRef': '60TK3s9V0nY', 'label': 'negro', 'categoryId': 'categoryId02', 'name': 'Negro'}, 
+#    {'videoRef': '1s4aYoAodlc', 'label': 'blanco', 'categoryId': 'categoryId02', 'name': 'Blanco'}, 
+#    {'videoRef': 'PUx8iIfwvDU', 'label': 'rojo', 'categoryId': 'categoryId02', 'name': 'Rojo'}]
+
+
+{'categories': [
+    {'description': 'Aprende el abecedario en LSP y mejora tu habilidad para deletrear con señas.', 'icon': 'hand', 'signCount': 6, 'levelId': 'levelId01', 'name': 'Alfabeto', 'progress': 0, 'id': 'categoryId01'}, 
+    {'description': 'Identifica y aprende los colores básicos para describir el mundo que te rodea.', 'icon': 'palette', 'signCount': 6, 'levelId': 'levelId01', 'name': 'Colores', 'progress': 0, 'id': 'categoryId02'}, 
+    {'description': 'Identifica y aprende los colores básicos para describir el mundo que te rodea.', 'icon': 'palette', 'signCount': 0, 'levelId': 'levelId01', 'name': 'Familia', 'progress': 0, 'id': 'categoryId03'}], 'canDoTest': False}
