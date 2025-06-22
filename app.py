@@ -273,7 +273,6 @@ def predict():
     1 for doc in signProgress_query.stream()
     if "progress" in doc.to_dict() and doc.to_dict()["progress"] >= 80)
 
-    
     category_doc = db.collection('categories').document(category_ID).get()
     level_ID = category_doc.to_dict().get("levelId")
 
@@ -281,28 +280,17 @@ def predict():
     db.collection("categoryProgress")
     .where("levelId", "==", level_ID)
     .where("uid", "==", UID_TEMP)
-    ).stream()
+    )
 
-    print("\n\n")
-    for doc in category_progress_query:
-        print("CATEGORY PROGRESS FOUND")
-    print("\n\n")
-
-    category_progress_doc = next((doc for doc in category_progress_query if doc.get("categoryId") == category_ID), None)
+    category_progress_doc = next((doc for doc in category_progress_query.stream() if doc.get("categoryId") == category_ID), None)
     #category_progress_doc = next(category_progress_query, None)
 
-    if category_progress_doc == None:
-        print("CATEGORY PROGRESS IS NONE")
-
-    print("\n\n")
-    for doc in category_progress_query:
-        print("CATEGORY PROGRESS FOUND AFTER NEXT")
-    print("\n\n")
 
     if category_progress_doc:
         doc_ref = db.collection("categoryProgress").document(category_progress_doc.id)
     else:
         doc_ref = db.collection("categoryProgress").document()
+
 
     doc_ref.set({
     "categoryId": category_ID,
@@ -315,13 +303,11 @@ def predict():
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
     
     total_progress = 0
-    for doc in category_progress_query:
+    for doc in category_progress_query.stream():
         data = doc.to_dict()
         progress = data.get("progress", 0)
-        print("CATEGORY PROGRESS: ",progress)
         total_progress += progress
     
-    print("total_progress: ",total_progress)
 
     level_progress_ref = (
         db.collection("levelProgress")
@@ -330,15 +316,18 @@ def predict():
         .limit(1)
     ).get()
 
+    level_total_signs = db.collection('levels').document(level_ID).get().to_dict().get("lessons")
+
     if level_progress_ref:
         # Document exists; update it
         doc_snapshot = level_progress_ref[0]
         existing_data = doc_snapshot.to_dict()
         doc_id = doc_snapshot.id
+        relative_progress = (total_progress * 100) / level_total_signs
 
         # Preserve 'available' value if it exists
         updated_data = {
-            "progress": total_progress,
+            "progress": relative_progress,
             "levelId": level_ID,
             "uid": UID_TEMP,
             "available": existing_data.get("available", False)
@@ -541,9 +530,3 @@ if __name__ == '__main__':
 #    {'videoRef': '60TK3s9V0nY', 'label': 'negro', 'categoryId': 'categoryId02', 'name': 'Negro'}, 
 #    {'videoRef': '1s4aYoAodlc', 'label': 'blanco', 'categoryId': 'categoryId02', 'name': 'Blanco'}, 
 #    {'videoRef': 'PUx8iIfwvDU', 'label': 'rojo', 'categoryId': 'categoryId02', 'name': 'Rojo'}]
-
-
-{'categories': [
-    {'description': 'Aprende el abecedario en LSP y mejora tu habilidad para deletrear con señas.', 'icon': 'hand', 'signCount': 6, 'levelId': 'levelId01', 'name': 'Alfabeto', 'progress': 0, 'id': 'categoryId01'}, 
-    {'description': 'Identifica y aprende los colores básicos para describir el mundo que te rodea.', 'icon': 'palette', 'signCount': 6, 'levelId': 'levelId01', 'name': 'Colores', 'progress': 0, 'id': 'categoryId02'}, 
-    {'description': 'Identifica y aprende los colores básicos para describir el mundo que te rodea.', 'icon': 'palette', 'signCount': 0, 'levelId': 'levelId01', 'name': 'Familia', 'progress': 0, 'id': 'categoryId03'}], 'canDoTest': False}
