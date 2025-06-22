@@ -458,11 +458,23 @@ def predict_test():
     
         result = {
             "probability": probability,
-            
+            "signID": sign_ID
         }
         test_result.append(result)
 
-    return 0
+    cumulative_score
+    for question in test_result:
+        cumulative_score += question["probability"]
+    
+    overall_score = cumulative_score/len(test_result)
+    final_result = {
+        "questions" : test_result,
+        "overallScore" : overall_score
+    }
+
+    return jsonify(final_result)
+
+[{"probability:" : 25}{"probability:" }{}]
 
 @app.route('/get-signs', methods=['GET'])
 def get_signs():
