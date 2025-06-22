@@ -172,7 +172,7 @@ def create_all_categories():
     {"id": "signId033", "name": "Azul", "label":"azul", "videoRef": "VC0csxuR34Q","question":"Haz la seña del color Azul"}
     ])
     print(f"Categoría creada con ID: {categoria_id}")
-    categoria_id = add_category_with_signs("categoryId03", "Familia", "Identifica y aprende los colores básicos para describir el mundo que te rodea.","palette", "levelId01", [
+    categoria_id = add_category_with_signs("categoryId03", "Familia", "","palette", "levelId01", [
     ])
     print(f"Categoría creada con ID: {categoria_id}")
     
@@ -584,7 +584,7 @@ def get_levels():
 def get_test_signs():
     #level_id = "levelId01"
     level_id = request.args.get('levelId')
-    max_signs = 3
+    max_signs = 2
 
     category_query = (
         db.collection("categories")
@@ -604,13 +604,18 @@ def get_test_signs():
             .where("categoryId", "==", category_doc.id)
         ).stream()
 
-        signs = [sign_doc.to_dict() for sign_doc in signs_query]
-        for sign in signs:
-            sign["categoryName"] = category_doc.get("name")
+        signs = []
+        for sign_doc in signs_query:
+            sign_data = sign_doc.to_dict()
+            sign_data["id"] = sign_doc.id  # Get the document ID
+            sign_data["categoryName"] = category_doc.get("name")
+            signs.append(sign_data)
 
         random.shuffle(signs)
         selected_signs = signs[:max_signs] if max_signs < len(signs) else signs
         merged_results.extend(selected_signs)
+    
+    random.shuffle(merged_results)
 
     #print(merged_results)
     return jsonify(merged_results)
