@@ -164,12 +164,12 @@ def create_all_categories():
     ])
     print(f"Categoría creada con ID: {categoria_id}")
     categoria_id = add_category_with_signs("categoryId02", "Colores", "Identifica y aprende los colores básicos para describir el mundo que te rodea.","palette", "levelId01", [
-    {"id": "signId007", "name": "Verde", "label":"verde", "videoRef": "KmUUdxL4W7U","question":"Haz la seña del color Verde"},
-    {"id": "signId008", "name": "Rojo", "label":"rojo", "videoRef": "PUx8iIfwvDU","question":"Haz la seña del color Rojo"},
-    {"id": "signId009", "name": "Amarillo", "label":"amarillo", "videoRef": "y1_EkCMMlhM","question":"Haz la seña del color Amarillo"},
-    {"id": "signId010", "name": "Blanco", "label":"blanco", "videoRef": "1s4aYoAodlc","question":"Haz la seña del color Blanco"},
-    {"id": "signId011", "name": "Negro", "label":"negro", "videoRef": "60TK3s9V0nY","question":"Haz la seña del color Negro"},
-    {"id": "signId012", "name": "Azul", "label":"azul", "videoRef": "VC0csxuR34Q","question":"Haz la seña del color Azul"}
+    {"id": "signId028", "name": "Verde", "label":"verde", "videoRef": "KmUUdxL4W7U","question":"Haz la seña del color Verde"},
+    {"id": "signId029", "name": "Rojo", "label":"rojo", "videoRef": "PUx8iIfwvDU","question":"Haz la seña del color Rojo"},
+    {"id": "signId030", "name": "Amarillo", "label":"amarillo", "videoRef": "y1_EkCMMlhM","question":"Haz la seña del color Amarillo"},
+    {"id": "signId031", "name": "Blanco", "label":"blanco", "videoRef": "1s4aYoAodlc","question":"Haz la seña del color Blanco"},
+    {"id": "signId032", "name": "Negro", "label":"negro", "videoRef": "60TK3s9V0nY","question":"Haz la seña del color Negro"},
+    {"id": "signId033", "name": "Azul", "label":"azul", "videoRef": "VC0csxuR34Q","question":"Haz la seña del color Azul"}
     ])
     print(f"Categoría creada con ID: {categoria_id}")
     categoria_id = add_category_with_signs("categoryId03", "Familia", "Identifica y aprende los colores básicos para describir el mundo que te rodea.","palette", "levelId01", [
@@ -181,9 +181,6 @@ def define_model_label_path(category_id, path_ending):
     path = 'models-v9/'
     #_v10.keras
     #_labels.json
-    print("\n\n")
-    print(category_id)
-    print("\n\n")
     if category_id == "categoryId01":
         path += "abecedario/abecedario" + path_ending
     elif category_id == "categoryId02":
@@ -197,7 +194,6 @@ def define_model_label_path(category_id, path_ending):
     elif category_id == "categoryId06":
         path += "pronombres/pronombres" + path_ending
     
-    print(path)
     return path
 
 
@@ -584,10 +580,10 @@ def get_levels():
     return jsonify(merged_results)
 
 
-@app.route('/get-exam-signs', methods=['GET'])
-def get_exam_signs():
-    level_id = "levelId01"
-    #level_id = request.args.get('levelId')
+@app.route('/get-test-signs', methods=['GET'])
+def get_test_signs():
+    #level_id = "levelId01"
+    level_id = request.args.get('levelId')
     max_signs = 3
 
     category_query = (
@@ -616,13 +612,13 @@ def get_exam_signs():
         selected_signs = signs[:max_signs] if max_signs < len(signs) else signs
         merged_results.extend(selected_signs)
 
-    print(merged_results)
+    #print(merged_results)
     return jsonify(merged_results)
 
 
 if __name__ == '__main__':
-    #port = int(os.environ.get('PORT', 10000))
-    #app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
     #app.run(debug=True, host='127.0.0.1', port=5000)
     
     #create_all_categories()
@@ -632,7 +628,7 @@ if __name__ == '__main__':
 
     #create_all_levels()
     #get_levels()
-    get_exam_signs()
+    #get_exam_signs()
 
 #max_signs = 3
 
