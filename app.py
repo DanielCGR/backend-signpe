@@ -386,12 +386,18 @@ def predict():
     return jsonify(result)
 
 
-@app.route('/predict-test', methods=['POST'])
-def predict_test():
+@app.route('/test-predict', methods=['POST'])
+def test_predict():
 
     test_result = []
 
-    for data_element in request.get_json():
+    data_package = request.get_json()
+    UID_TEMP = data_package["uid"]
+    print("\n\n\n")
+    print(UID_TEMP)
+    print("\n\n")
+
+    for data_element in data_package["answers"]:
         data = data_element
         images = data.get('frames')
 
@@ -400,7 +406,6 @@ def predict_test():
 
         sequence = []
 
-        UID_TEMP = data.get('uid')
         sign_ID = data.get('signId')
         sign_doc = db.collection('signs').document(sign_ID).get()
         current_sign_label = sign_doc.to_dict().get("label") # verde
@@ -468,13 +473,12 @@ def predict_test():
     
     overall_score = cumulative_score/len(test_result)
     final_result = {
-        "questions" : test_result,
+        "results" : test_result,
         "overallScore" : overall_score
     }
 
     return jsonify(final_result)
 
-[{"probability:" : 25}{"probability:" }{}]
 
 @app.route('/get-signs', methods=['GET'])
 def get_signs():
