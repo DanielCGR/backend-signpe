@@ -163,6 +163,7 @@ def create_all_categories():
     {"id": "signId027", "name": "Letra Z", "label":"z", "videoRef": "youtube.com","question":"Haz la seña de la letra Z"}
     ])
     print(f"Categoría creada con ID: {categoria_id}")
+
     categoria_id = add_category_with_signs("categoryId02", "Colores", "Identifica y aprende los colores básicos para describir el mundo que te rodea.","palette", "levelId01", [
     {"id": "signId028", "name": "Verde", "label":"verde", "videoRef": "KmUUdxL4W7U","question":"Haz la seña del color Verde"},
     {"id": "signId029", "name": "Rojo", "label":"rojo", "videoRef": "PUx8iIfwvDU","question":"Haz la seña del color Rojo"},
@@ -172,7 +173,48 @@ def create_all_categories():
     {"id": "signId033", "name": "Azul", "label":"azul", "videoRef": "VC0csxuR34Q","question":"Haz la seña del color Azul"}
     ])
     print(f"Categoría creada con ID: {categoria_id}")
-    categoria_id = add_category_with_signs("categoryId03", "Familia", "","palette", "levelId01", [
+
+    categoria_id = add_category_with_signs("categoryId03", "Familia", "","contact-round", "levelId01", [
+    {"id": "signId034", "name": "Amigo", "label":"amigo", "videoRef": "youtube.com","question":"Haz la seña de Amigo"},
+    {"id": "signId035", "name": "Bebe", "label":"bebe", "videoRef": "youtube.com","question":"Haz la seña de Bebe"},
+    {"id": "signId036", "name": "Hombre", "label":"hombre", "videoRef": "youtube.com","question":"Haz la seña de Hombre"},
+    {"id": "signId037", "name": "Mamá", "label":"mama", "videoRef": "youtube.com","question":"Haz la seña de Mamá"},
+    {"id": "signId038", "name": "Mujer", "label":"mujer", "videoRef": "youtube.com","question":"Haz la seña de Mujer"},
+    {"id": "signId039", "name": "Papá", "label":"papa", "videoRef": "youtube.com","question":"Haz la seña de Papá"}
+    ])
+    print(f"Categoría creada con ID: {categoria_id}")
+
+    categoria_id = add_category_with_signs("categoryId04", "Números", "","square-sigma", "levelId01", [
+    {"id": "signId040", "name": "Cero", "label":"cero", "videoRef": "youtube.com","question":"Haz la seña del número Cero"},
+    {"id": "signId041", "name": "Uno", "label":"uno", "videoRef": "youtube.com","question":"Haz la seña del número Uno"},
+    {"id": "signId042", "name": "Dos", "label":"dos", "videoRef": "youtube.com","question":"Haz la seña del número Dos"},
+    {"id": "signId043", "name": "Tres", "label":"tres", "videoRef": "youtube.com","question":"Haz la seña del número Tres"},
+    {"id": "signId044", "name": "Cuatro", "label":"cuatro", "videoRef": "youtube.com","question":"Haz la seña del número Cuatro"},
+    {"id": "signId045", "name": "Cinco", "label":"cinco", "videoRef": "youtube.com","question":"Haz la seña del número Cinco"},
+    {"id": "signId046", "name": "Seis", "label":"seis", "videoRef": "youtube.com","question":"Haz la seña del número Seis"},
+    {"id": "signId047", "name": "Siete", "label":"siete", "videoRef": "youtube.com","question":"Haz la seña del número Siete"},
+    {"id": "signId048", "name": "Ocho", "label":"ocho", "videoRef": "youtube.com","question":"Haz la seña del número Ocho"},
+    {"id": "signId049", "name": "Nueve", "label":"nueve", "videoRef": "youtube.com","question":"Haz la seña del número Nueve"}
+    ])
+    print(f"Categoría creada con ID: {categoria_id}")
+
+    categoria_id = add_category_with_signs("categoryId05", "Preguntas", "","message-circle-question-mark", "levelId01", [
+    {"id": "signId050", "name": "¿Cómo?", "label":"como", "videoRef": "youtube.com","question":"Haz la seña de la pregunta ¿Cómo?"},
+    {"id": "signId051", "name": "¿Cúal?", "label":"cual", "videoRef": "youtube.com","question":"Haz la seña de la pregunta ¿Cúal?"},
+    {"id": "signId052", "name": "¿Dónde?", "label":"donde", "videoRef": "youtube.com","question":"Haz la seña de la pregunta ¿Dónde?"},
+    {"id": "signId053", "name": "¿Por qué?", "label":"porque", "videoRef": "youtube.com","question":"Haz la seña de la pregunta ¿Por qué?"},
+    {"id": "signId054", "name": "¿Qué?", "label":"que", "videoRef": "youtube.com","question":"Haz la seña de la pregunta ¿Qué?"},
+    {"id": "signId055", "name": "¿Quién?", "label":"quien", "videoRef": "youtube.com","question":"Haz la seña de la pregunta ¿Quién?"}
+    ])
+    print(f"Categoría creada con ID: {categoria_id}")
+    
+    categoria_id = add_category_with_signs("categoryId06", "Pronombres", "","user-pen", "levelId01", [
+    {"id": "signId056", "name": "Yo", "label":"yo", "videoRef": "youtube.com","question":"Haz la seña \"Yo\""},
+    {"id": "signId057", "name": "Tú", "label":"tu", "videoRef": "youtube.com","question":"Haz la seña \"Tú\""},
+    {"id": "signId058", "name": "Él", "label":"el", "videoRef": "youtube.com","question":"Haz la seña \"Él\""},
+    {"id": "signId059", "name": "Ella", "label":"ella", "videoRef": "youtube.com","question":"Haz la seña \"Ella\""},
+    {"id": "signId060", "name": "Nosotros", "label":"nosotros", "videoRef": "youtube.com","question":"Haz la seña \"Nosotros\""},
+    {"id": "signId061", "name": "Ustedes", "label":"ustedes", "videoRef": "youtube.com","question":"Haz la seña \"Ustedes\""}
     ])
     print(f"Categoría creada con ID: {categoria_id}")
     
@@ -201,13 +243,9 @@ def define_model_label_path(category_id, path_ending):
 #def index():
 #    return render_template('index.html')
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_react(path):
-    if path != "" and os.path.exists(os.path.join("static/dist", path)):
-        return send_from_directory("static/dist", path)
-    else:
-        return send_from_directory("static/dist", "index.html")
+@app.route('/')
+def index():
+    return jsonify({"status": "Backend is running ✅"}), 200
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -393,9 +431,6 @@ def test_predict():
 
     data_package = request.get_json()
     UID_TEMP = data_package["uid"]
-    print("\n\n\n")
-    print(UID_TEMP)
-    print("\n\n")
 
     for data_element in data_package["answers"]:
         data = data_element
@@ -462,23 +497,86 @@ def test_predict():
         probability = float(round(prediction[target_index] * 100, 2))
     
         result = {
-            "probability": probability,
-            "signID": sign_ID
+            "probability": float(round(probability, 0)),
+            "signId": sign_ID
         }
         test_result.append(result)
 
-    cumulative_score
+    cumulative_score = 0
     for question in test_result:
         cumulative_score += question["probability"]
     
-    overall_score = cumulative_score/len(test_result)
+    overall_score = float(round(cumulative_score/len(test_result), 0))
+
     final_result = {
         "results" : test_result,
         "overallScore" : overall_score
     }
+    
+    if overall_score < 80:
+        return jsonify(final_result)
+    
+    sign_ref = db.collection('signs').document(sign_ID)
+    sign_doc = sign_ref.get()
+    sign_data = sign_doc.to_dict()
+    category_id = sign_data.get('categoryId')
 
+    category_ref = db.collection('categories').document(category_id)
+    category_doc = category_ref.get()
+    category_data = category_doc.to_dict()
+    level_id = category_data.get('levelId')
+
+    level_ref = db.collection('levels').document(level_id)
+    level_doc = level_ref.get()
+    level_data = level_doc.to_dict()
+
+    level_progress_ref = (
+        db.collection("levelProgress")
+        .where("levelId", "==", level_data.get('nextLevel'))
+        .where("uid", "==", UID_TEMP)
+        .limit(1)
+    ).get()
+
+    if level_progress_ref:
+        return jsonify(final_result)
+    else:
+        level_progress_data = {
+        "available" : True,
+        "levelId" : level_data.get('nextLevel'),
+        "progress" : 0,
+        "uid" : UID_TEMP
+        }
+        db.collection("levelProgress").add(level_progress_data)
+    
+    
     return jsonify(final_result)
 
+@app.route('/setup-user', methods=['POST'])
+def setup_user():
+    data = request.get_json()
+    uid = data.get("uid")
+    username = data.get("username")
+    #create user
+
+    user_ref = db.collection("users").document(uid)
+
+    user_ref.set({
+        "uid": uid,
+        "username": username
+        #Extra for the 3 things in dashboard
+    }, merge=True)
+
+    #create category progress for basic
+    level_progress_ref = db.collection("levelProgress").document()
+
+    level_progress_ref.set({
+        "uid": uid,
+        "progress": 0,
+        "levelId": "levelId01",
+        "available": True
+    }, merge=True)
+
+    return "",204
 
 @app.route('/get-signs', methods=['GET'])
 def get_signs():
@@ -635,7 +733,6 @@ def get_test_signs():
 
     #print(merged_results)
     return jsonify(merged_results)
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
