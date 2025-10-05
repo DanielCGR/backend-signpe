@@ -38,7 +38,7 @@ except Exception as e:
 db = firestore.client()
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5173","https://signpe-lo8uskfq6-chorris-projects.vercel.app"])
+CORS(app, origins=["http://localhost:5173","https://signpe-lo8uskfq6-chorris-projects.vercel.app","https://signpe.vercel.app/"])
 
 # Inicializar MediaPipe
 mp_pose = mp.solutions.pose
